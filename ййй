@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Шашки</title>
+<style>
+body{margin:0;background:#08102a;color:white;font-family:Arial;text-align:center}
+.app{padding:12px}
+.top{background:#20285a;border-radius:20px;padding:14px;margin-bottom:14px}
+h1{margin:0;font-size:32px}
+#turn{margin-top:8px;color:#ffd166;font-size:22px;font-weight:bold}
+table{width:95vw;height:95vw;max-width:520px;max-height:520px;margin:auto;border:6px solid #4b2917;border-spacing:0}
+td{width:12.5%;height:12.5%;text-align:center;vertical-align:middle}
+.light{background:#f0c486}
+.dark{background:#73401f}
+.piece{width:70%;height:70%;border-radius:50%;margin:auto}
+.white{background:white}
+.black{background:#111}
+.sel{outline:4px solid yellow;outline-offset:-4px}
+.can:after{content:"";display:block;width:22px;height:22px;background:#35e87d;border-radius:50%;margin:auto}
+button{margin-top:14px;padding:14px 22px;border:0;border-radius:14px;background:#ffd166;font-size:18px;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>🏁 Шашки</h1>
+    <div id="turn">Ход: белые</div>
+  </div>
+
+  <table id="board"></table>
+
+  <button onclick="location.reload()">Новая игра</button>
+</div>
+
+<script>
+let board=[];
+let turn="white";
+let selected=null;
+let moves=[];
+
+function start(){
+  board=[];
+  for(let r=0;r<8;r++){
+    board[r]=[];
+    for(let c=0;c<8;c++){
+      board[r][c]=null;
+      if((r+c)%2===1 && r<3) board[r][c]="black";
+      if((r+c)%2===1 && r>4) board[r][c]="white";
+    }
+  }
+  draw();
+}
+
+function draw(){
+  let html="";
+  for(let r=0;r<8;r++){
+    html+="<tr>";
+    for(let c=0;c<8;c++){
+      let cls=(r+c)%2===0?"light":"dark";
+      if(selected && selected.r===r && selected.c===c) cls+=" sel";
+      if(moves.find(m=>m.r===r&&m.c===c)) cls+=" can";
+
+      html+=`<td class="${cls}" onclick="tap(${r},${c})">`;
+
+      if(board[r][c]){
+        html+=`<div class="piece ${board[r][c]}"></div>`;
+      }
+
+      html+="</td>";
+    }
+    html+="</tr>";
+  }
+  document.getElementById("board").innerHTML=html;
+  document.getElementById("turn").innerHTML="Ход: "+(turn==="white"?"белые":"черные");
+}
+
+function tap(r,c){
+  let move=moves.find(m=>m.r===r&&m.c===c);
+
+  if(move && selected){
+    board[r][c]=board[selected.r][selected.c];
+    board[selected.r][selected.c]=null;
+    selected=null;
+    moves=[];
+    turn=turn==="white"?"black":"white";
+    draw();
+    return;
+  }
+
+  if(board[r][c]===turn){
+    selected={r,c};
+    moves=[];
+
+    let dir=turn==="white"?-1:1;
+
+    [[dir,-1],[dir,1]].forEach(d=>{
+      let nr=r+d[0];
+      let nc=c+d[1];
+
+      if(nr>=0&&nr<8&&nc>=0&&nc<8&&!board[nr][nc]){
+        moves.push({r:nr,c:nc});
+      }
+    });
+
+    draw();
+  }
+}
+
+start();
+</script>
+</body>
+</html>
